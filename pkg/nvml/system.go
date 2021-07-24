@@ -38,13 +38,6 @@ func SystemGetCudaDriverVersion() (int, Return) {
 	return int(CudaDriverVersion), ret
 }
 
-// nvml.SystemGetCudaDriverVersion_v2()
-func SystemGetCudaDriverVersion_v2() (int, Return) {
-	var CudaDriverVersion int32
-	ret := nvmlSystemGetCudaDriverVersion_v2(&CudaDriverVersion)
-	return int(CudaDriverVersion), ret
-}
-
 // nvml.SystemGetProcessName()
 func SystemGetProcessName(Pid int) (string, Return) {
 	Name := make([]byte, C.PR_SET_NAME)

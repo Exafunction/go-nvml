@@ -101,14 +101,14 @@ func (Device Device) GetSerial() (string, Return) {
 }
 
 // nvml.DeviceGetCpuAffinity()
-func DeviceGetCpuAffinity(Device Device, NumCPUs int) ([]uint, Return) {
+func DeviceGetCpuAffinity(Device Device, NumCPUs int) ([]uint32, Return) {
 	CpuSetSize := uint32((NumCPUs-1)/int(unsafe.Sizeof(uint(0))) + 1)
-	CpuSet := make([]uint, CpuSetSize)
+	CpuSet := make([]uint32, CpuSetSize)
 	ret := nvmlDeviceGetCpuAffinity(Device, CpuSetSize, &CpuSet[0])
 	return CpuSet, ret
 }
 
-func (Device Device) GetCpuAffinity(NumCPUs int) ([]uint, Return) {
+func (Device Device) GetCpuAffinity(NumCPUs int) ([]uint32, Return) {
 	return DeviceGetCpuAffinity(Device, NumCPUs)
 }
 
@@ -131,26 +131,26 @@ func (Device Device) ClearCpuAffinity() Return {
 }
 
 // nvml.DeviceGetMemoryAffinity()
-func DeviceGetMemoryAffinity(Device Device, NumNodes int, Scope AffinityScope) ([]uint, Return) {
+func DeviceGetMemoryAffinity(Device Device, NumNodes int, Scope AffinityScope) ([]uint32, Return) {
 	NodeSetSize := uint32((NumNodes-1)/int(unsafe.Sizeof(uint(0))) + 1)
-	NodeSet := make([]uint, NodeSetSize)
+	NodeSet := make([]uint32, NodeSetSize)
 	ret := nvmlDeviceGetMemoryAffinity(Device, NodeSetSize, &NodeSet[0], Scope)
 	return NodeSet, ret
 }
 
-func (Device Device) GetMemoryAffinity(NumNodes int, Scope AffinityScope) ([]uint, Return) {
+func (Device Device) GetMemoryAffinity(NumNodes int, Scope AffinityScope) ([]uint32, Return) {
 	return DeviceGetMemoryAffinity(Device, NumNodes, Scope)
 }
 
 // nvml.DeviceGetCpuAffinityWithinScope()
-func DeviceGetCpuAffinityWithinScope(Device Device, NumCPUs int, Scope AffinityScope) ([]uint, Return) {
+func DeviceGetCpuAffinityWithinScope(Device Device, NumCPUs int, Scope AffinityScope) ([]uint32, Return) {
 	CpuSetSize := uint32((NumCPUs-1)/int(unsafe.Sizeof(uint(0))) + 1)
-	CpuSet := make([]uint, CpuSetSize)
+	CpuSet := make([]uint32, CpuSetSize)
 	ret := nvmlDeviceGetCpuAffinityWithinScope(Device, CpuSetSize, &CpuSet[0], Scope)
 	return CpuSet, ret
 }
 
-func (Device Device) GetCpuAffinityWithinScope(NumCPUs int, Scope AffinityScope) ([]uint, Return) {
+func (Device Device) GetCpuAffinityWithinScope(NumCPUs int, Scope AffinityScope) ([]uint32, Return) {
 	return DeviceGetCpuAffinityWithinScope(Device, NumCPUs, Scope)
 }
 
@@ -515,17 +515,6 @@ func DeviceGetFanSpeed(Device Device) (uint32, Return) {
 
 func (Device Device) GetFanSpeed() (uint32, Return) {
 	return DeviceGetFanSpeed(Device)
-}
-
-// nvml.DeviceGetFanSpeed_v2()
-func DeviceGetFanSpeed_v2(Device Device, Fan int) (uint32, Return) {
-	var Speed uint32
-	ret := nvmlDeviceGetFanSpeed_v2(Device, uint32(Fan), &Speed)
-	return Speed, ret
-}
-
-func (Device Device) GetFanSpeed_v2(Fan int) (uint32, Return) {
-	return DeviceGetFanSpeed_v2(Device, Fan)
 }
 
 // nvml.DeviceGetTemperature()
@@ -1097,27 +1086,6 @@ func (Device Device) GetRetiredPages(Cause PageRetirementCause) ([]uint64, Retur
 	return DeviceGetRetiredPages(Device, Cause)
 }
 
-// nvml.DeviceGetRetiredPages_v2()
-func DeviceGetRetiredPages_v2(Device Device, Cause PageRetirementCause) ([]uint64, []uint64, Return) {
-	var PageCount uint32 = 1 // Will be reduced upon returning
-	for {
-		Addresses := make([]uint64, PageCount)
-		Timestamps := make([]uint64, PageCount)
-		ret := nvmlDeviceGetRetiredPages_v2(Device, Cause, &PageCount, &Addresses[0], &Timestamps[0])
-		if ret == SUCCESS {
-			return Addresses[:PageCount], Timestamps[:PageCount], ret
-		}
-		if ret != ERROR_INSUFFICIENT_SIZE {
-			return nil, nil, ret
-		}
-		PageCount *= 2
-	}
-}
-
-func (Device Device) GetRetiredPages_v2(Cause PageRetirementCause) ([]uint64, []uint64, Return) {
-	return DeviceGetRetiredPages_v2(Device, Cause)
-}
-
 // nvml.DeviceGetRetiredPagesPendingStatus()
 func DeviceGetRetiredPagesPendingStatus(Device Device) (EnableState, Return) {
 	var IsPending EnableState
@@ -1398,11 +1366,6 @@ func DeviceQueryDrainState(PciInfo *PciInfo) (EnableState, Return) {
 // nvml.DeviceRemoveGpu()
 func DeviceRemoveGpu(PciInfo *PciInfo) Return {
 	return nvmlDeviceRemoveGpu(PciInfo)
-}
-
-// nvml.DeviceRemoveGpu_v2()
-func DeviceRemoveGpu_v2(PciInfo *PciInfo, GpuState DetachGpuState, LinkState PcieLinkState) Return {
-	return nvmlDeviceRemoveGpu_v2(PciInfo, GpuState, LinkState)
 }
 
 // nvml.DeviceDiscoverGpus()

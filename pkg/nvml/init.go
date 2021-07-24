@@ -19,6 +19,7 @@ import (
 	"github.com/NVIDIA/go-nvml/pkg/dl"
 )
 
+// #cgo LDFLAGS: -l:libnvidia-ml.so.1
 import "C"
 
 const (
@@ -41,7 +42,6 @@ func Init() Return {
 	}
 
 	nvml = lib
-	updateVersionedSymbols()
 
 	return nvmlInit()
 }
@@ -88,53 +88,3 @@ var nvmlDeviceGetNvLinkRemotePciInfo = nvmlDeviceGetNvLinkRemotePciInfo_v1
 var nvmlDeviceRemoveGpu = nvmlDeviceRemoveGpu_v1
 var nvmlDeviceGetGridLicensableFeatures = nvmlDeviceGetGridLicensableFeatures_v1
 var nvmlEventSetWait = nvmlEventSetWait_v1
-
-// updateVersionedSymbols()
-func updateVersionedSymbols() {
-	err := nvml.Lookup("nvmlInit_v2")
-	if err == nil {
-		nvmlInit = nvmlInit_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetPciInfo_v2")
-	if err == nil {
-		nvmlDeviceGetPciInfo = nvmlDeviceGetPciInfo_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetPciInfo_v3")
-	if err == nil {
-		nvmlDeviceGetPciInfo = nvmlDeviceGetPciInfo_v3
-	}
-	err = nvml.Lookup("nvmlDeviceGetCount_v2")
-	if err == nil {
-		nvmlDeviceGetCount = nvmlDeviceGetCount_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetHandleByIndex_v2")
-	if err == nil {
-		nvmlDeviceGetHandleByIndex = nvmlDeviceGetHandleByIndex_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetHandleByPciBusId_v2")
-	if err == nil {
-		nvmlDeviceGetHandleByPciBusId = nvmlDeviceGetHandleByPciBusId_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetNvLinkRemotePciInfo_v2")
-	if err == nil {
-		nvmlDeviceGetNvLinkRemotePciInfo = nvmlDeviceGetNvLinkRemotePciInfo_v2
-	}
-	// Unable to overwrite nvmlDeviceRemoveGpu() because the v2 function takes
-	// a different set of parameters than the v1 function.
-	//err = nvml.Lookup("nvmlDeviceRemoveGpu_v2")
-	//if err == nil {
-	//    nvmlDeviceRemoveGpu = nvmlDeviceRemoveGpu_v2
-	//}
-	err = nvml.Lookup("nvmlDeviceGetGridLicensableFeatures_v2")
-	if err == nil {
-		nvmlDeviceGetGridLicensableFeatures = nvmlDeviceGetGridLicensableFeatures_v2
-	}
-	err = nvml.Lookup("nvmlDeviceGetGridLicensableFeatures_v3")
-	if err == nil {
-		nvmlDeviceGetGridLicensableFeatures = nvmlDeviceGetGridLicensableFeatures_v3
-	}
-	err = nvml.Lookup("nvmlEventSetWait_v2")
-	if err == nil {
-		nvmlEventSetWait = nvmlEventSetWait_v2
-	}
-}

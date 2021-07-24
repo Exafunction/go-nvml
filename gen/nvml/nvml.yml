@@ -67,6 +67,8 @@ TRANSLATOR:
       - {action: replace, from: "^VgpuPgpuMetadata", to: "nvmlVgpuPgpuMetadata"}
     function:
       - {action: accept, from: "^nvml"}
+      - {action: ignore, from: "_v2$"}
+      - {action: ignore, from: "_v3$"}
       - {action: replace, from: "^nvmlInit$", to: "nvmlInit_v1"}
       - {action: replace, from: "^nvmlDeviceGetPciInfo$", to: "nvmlDeviceGetPciInfo_v1"}
       - {action: replace, from: "^nvmlDeviceGetCount$", to: "nvmlDeviceGetCount_v1"}

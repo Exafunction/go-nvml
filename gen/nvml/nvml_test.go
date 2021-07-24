@@ -62,14 +62,6 @@ func TestSystem(t *testing.T) {
 		t.Logf("  version: %v", cudaDriverVersion)
 	}
 
-	cudaDriverVersionV2, ret := SystemGetCudaDriverVersion_v2()
-	if ret != SUCCESS {
-		t.Errorf("SystemGetCudaDriverVersion_v2: %v", ret)
-	} else {
-		t.Logf("SystemGetCudaDriverVersion_v2: %v", ret)
-		t.Logf("  version: %v", cudaDriverVersionV2)
-	}
-
 	processName, ret := SystemGetProcessName(1)
 	if ret != SUCCESS {
 		t.Errorf("SystemGetProcessName: %v", ret)
