@@ -15,9 +15,12 @@
 package nvml
 
 import (
+	"runtime"
+	"sync"
 	"unsafe"
 )
 
+// #include <stdlib.h>
 import "C"
 
 var cgoAllocsUnknown = new(struct{})
@@ -57,8 +60,61 @@ func packPCharString(p *C.char) (raw string) {
 	return
 }
 
-// unpackPCharString represents the data from Go string as *C.char and avoids copying.
-func unpackPCharString(str string) (*C.char, *struct{}) {
-	h := (*stringHeader)(unsafe.Pointer(&str))
-	return (*C.char)(h.Data), cgoAllocsUnknown
+type cgoAllocMap struct {
+	mux sync.RWMutex
+	m   map[unsafe.Pointer]struct{}
+}
+
+func (a *cgoAllocMap) Add(ptr unsafe.Pointer) {
+	a.mux.Lock()
+	if a.m == nil {
+		a.m = make(map[unsafe.Pointer]struct{})
+	}
+	a.m[ptr] = struct{}{}
+	a.mux.Unlock()
+}
+
+func (a *cgoAllocMap) IsEmpty() bool {
+	a.mux.RLock()
+	isEmpty := len(a.m) == 0
+	a.mux.RUnlock()
+	return isEmpty
+}
+
+func (a *cgoAllocMap) Borrow(b *cgoAllocMap) {
+	if b == nil || b.IsEmpty() {
+		return
+	}
+	b.mux.Lock()
+	a.mux.Lock()
+	for ptr := range b.m {
+		if a.m == nil {
+			a.m = make(map[unsafe.Pointer]struct{})
+		}
+		a.m[ptr] = struct{}{}
+		delete(b.m, ptr)
+	}
+	a.mux.Unlock()
+	b.mux.Unlock()
+}
+
+func (a *cgoAllocMap) Free() {
+	a.mux.Lock()
+	for ptr := range a.m {
+		C.free(ptr)
+		delete(a.m, ptr)
+	}
+	a.mux.Unlock()
+}
+
+// unpackPCharString copies the data from Go string as *C.char.
+func unpackPCharString(str string) (*C.char, *cgoAllocMap) {
+	allocs := new(cgoAllocMap)
+	defer runtime.SetFinalizer(allocs, func(a *cgoAllocMap) {
+		go a.Free()
+	})
+
+	mem0 := unsafe.Pointer(C.CString(str))
+	allocs.Add(mem0)
+	return (*C.char)(mem0), allocs
 }
